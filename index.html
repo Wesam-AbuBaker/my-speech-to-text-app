@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحويل الكلام إلى نص</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #00416A, #E4E5E6);
+            /* الوضع الفاتح */
+            color: #333;
+            transition: direction 0.3s, text-align 0.3s, background 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(to right, #333, #555);
+            /* الوضع الداكن */
+            color: #CCC;
+        }
+
+        h2 {
+            margin: 20px 0;
+            font-size: 2rem;
+            color: #00416A;
+            /* لون العنوان في الوضع الفاتح */
+            transition: color 0.3s;
+        }
+
+        body.dark-mode h2 {
+            color: #E4E5E6;
+            /* لون العنوان في الوضع الداكن */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 600px;
+            background: #FFFFFF;
+            /* خلفية الحاوية في الوضع الفاتح */
+            border-radius: 12px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px auto;
+            position: relative;
+            /* لإتاحة وضع العناصر المطلقة */
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        body.dark-mode .container {
+            background: #444;
+            /* خلفية الحاوية في الوضع الداكن */
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        #result {
+            border: 1px solid #DDDDDD;
+            padding: 20px;
+            height: 200px;
+            width: 100%;
+            margin-bottom: 10px;
+            background: #F5F5F5;
+            /* خلفية النتائج في الوضع الفاتح */
+            border-radius: 8px;
+            overflow-y: auto;
+            font-size: 1.2rem;
+            color: #333;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.dark-mode #result {
+            background: #555;
+            /* خلفية النتائج في الوضع الداكن */
+            color: #CCC;
+            border: 1px solid #666;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            font-size: 1.2rem;
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
+            background-color: #007BFF;
+            /* لون الزر الأساسي */
+            color: #FFF;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+
+        button.recording {
+            background-color: #FF5722;
+            /* لون الزر أثناء التسجيل */
+            box-shadow: 0 0 15px rgba(255, 87, 34, 0.6);
+            /* تأثير توهج */
+        }
+
+        button.recording:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            border-radius: 50%;
+            background: rgba(255, 87, 34, 0.2);
+            /* تأثير توهج خارج الزر */
+            transform: translate(-50%, -50%);
+            animation: pulse 1.5s infinite;
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            /* لون الزر عند التمرير */
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        select {
+            font-size: 1rem;
+            padding: 10px;
+            border: 1px solid #DDDDDD;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 200px;
+            background: #FFFFFF;
+            /* خلفية القائمة المنسدلة في الوضع الفاتح */
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.dark-mode select {
+            background: #666;
+            /* خلفية القائمة المنسدلة في الوضع الداكن */
+            color: #CCC;
+            border: 1px solid #555;
+        }
+
+        #toggleMode {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #555;
+            /* لون الزر العائم */
+            color: #FFF;
+            border: none;
+            border-radius: 50%;
+            height: 60px;
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: background-color 0.3s;
+            z-index: 1000;
+            /* تأكد من أن الزر في الأعلى */
+        }
+
+        body.dark-mode #toggleMode {
+            background-color: #FFC107;
+            /* لون الزر العائم في الوضع الداكن */
+        }
+
+        body.rtl #toggleMode {
+            right: auto;
+            left: 20px;
+        }
+
+        @media (max-width: 768px) {
+            button {
+                height: 50px;
+                width: 50px;
+            }
+
+            h2 {
+                font-size: 1.7rem;
+            }
+
+            #toggleMode {
+                height: 50px;
+                width: 50px;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 100%;
+                padding: 10px;
+            }
+
+            button {
+                height: 40px;
+                width: 40px;
+                font-size: 1rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            #toggleMode {
+                height: 40px;
+                width: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        /* زر النسخ */
+        #copyButton {
+            background-color: #28a745;
+            /* لون الزر عند النسخ */
+            color: #FFF;
+            border: none;
+            outline: none;
+            border-radius: 10px;
+            /* padding: 10px 20px; */
+            margin-top: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            font-size: 1.5rem;
+        }
+
+        body.rtl #copyButton {
+            margin-top: 10px;
+        }
+
+        /* تلميح النسخ */
+        #copyHint {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: opacity 0.3s;
+        }
+
+        body.rtl #copyHint {
+            right: auto;
+            left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2 id="headerText">محول الكلام إلى نص</h2>
+        <select id="languageSelect">
+            <option value="ar-AR">العربية</option>
+            <option value="en-US">English</option>
+        </select>
+        <div id="result">
+            <!-- محتوى النص هنا -->
+        </div>
+        <button id="copyButton" onclick="copyText()">
+            <i class="fa fa-copy"></i>
+        </button>
+        <div class="button-container">
+            <button id="startButton" onclick="startConverting()">
+                <i class="fa fa-microphone"></i>
+            </button>
+            <button id="stopButton" onclick="stopConverting()">
+                <i class="fa fa-stop"></i>
+            </button>
+        </div>
+    </div>
+    <button id="toggleMode">
+        <i class="fa fa-moon"></i> <!-- أيقونة التبديل -->
+    </button>
+    <div id="copyHint">تم نسخ النص إلى الحافظة!</div>
+
+    <script>
+        const resultElement = document.getElementById("result");
+        const languageSelect = document.getElementById("languageSelect");
+        const headerText = document.getElementById("headerText");
+        const startButton = document.getElementById("startButton");
+        const stopButton = document.getElementById("stopButton");
+        const toggleModeButton = document.getElementById("toggleMode");
+        const copyButton = document.getElementById("copyButton");
+        const copyHint = document.getElementById("copyHint");
+        let recognition;
+
+        function startConverting() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                setupRecognition(recognition);
+                recognition.start();
+                startButton.classList.add('recording');
+                stopButton.classList.remove('recording');
+            } else {
+                alert("متصفحك لا يدعم التعرف على الصوت.");
+            }
+        }
+
+        function setupRecognition(recognition) {
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = languageSelect.value;
+            recognition.onresult = (event) => {
+                const { finalTranscript, interTranscript } = processResult(event.results);
+                resultElement.innerHTML = finalTranscript + interTranscript;
+            };
+            recognition.onerror = function (event) {
+                if (event.error === 'not-allowed') {
+                    showPermissionInstructions();
+                } else if (event.error === 'network') {
+                    alert("هناك مشكلة في الشبكة. يرجى المحاولة لاحقًا.");
+                } else if (event.error === 'no-speech') {
+                    alert("لم يتم الكشف عن أي صوت. يرجى المحاولة مجددًا.");
+                }
+            };
+            recognition.onend = () => {
+                startButton.classList.remove('recording');
+                stopButton.classList.add('recording');
+            };
+        }
+
+        function processResult(results) {
+            let finalTranscript = '';
+            let interTranscript = '';
+            for (let i = 0; i < results.length; i++) {
+                let transcript = results[i][0].transcript;
+                transcript = transcript.replace("\n", "<br>");
+                if (results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interTranscript += transcript;
+                }
+            }
+            return { finalTranscript, interTranscript };
+        }
+
+        function stopConverting() {
+            if (recognition) {
+                recognition.stop();
+                startButton.classList.remove('recording');
+                stopButton.classList.add('recording');
+            }
+        }
+
+        function updateLanguage() {
+            const selectedLanguage = languageSelect.value;
+            headerText.textContent = selectedLanguage === 'ar-AR' ? 'محول الكلام إلى نص' : 'Speech to Text Converter';
+
+            document.body.style.direction = (selectedLanguage === 'ar-AR') ? 'rtl' : 'ltr';
+            resultElement.style.direction = (selectedLanguage === 'ar-AR') ? 'rtl' : 'ltr';
+            resultElement.style.textAlign = (selectedLanguage === 'ar-AR') ? 'right' : 'left';
+            copyButton.style.marginTop = (selectedLanguage === 'ar-AR') ? '10px' : '10px';
+        }
+
+        languageSelect.addEventListener('change', () => {
+            if (recognition && recognition.start) {
+                recognition.stop();
+                setupRecognition(recognition);
+            }
+            updateLanguage();
+        });
+
+        updateLanguage();
+
+        toggleModeButton.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            toggleModeButton.innerHTML = `<i class="fa ${isDarkMode ? 'fa-sun' : 'fa-moon'}"></i>`;
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        });
+
+        const savedMode = localStorage.getItem('theme') || 'light';
+        if (savedMode === 'dark') {
+            document.body.classList.add('dark-mode');
+            toggleModeButton.innerHTML = `<i class="fa fa-sun"></i>`;
+        }
+
+        function copyText() {
+            const text = resultElement.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showCopyHint();
+            }).catch(err => {
+                console.error('خطأ في نسخ النص: ', err);
+            });
+        }
+
+        function showCopyHint() {
+            copyHint.style.display = 'block';
+            setTimeout(() => {
+                copyHint.style.display = 'none';
+            }, 2000);
+        }
+
+        function requestMicrophonePermission() {
+            // يبدأ التفاعل مع المستخدم لطلب الإذن للميكروفون
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    // إذا نجح الطلب، قم بإغلاق الدفق
+                    stream.getTracks().forEach(track => track.stop());
+                    console.log("Microphone access granted");
+                })
+                .catch(err => {
+                    console.error("Error accessing microphone", err);
+                    showPermissionInstructions();
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            requestMicrophonePermission();
+        });
+
+        function showPermissionInstructions() {
+            const instructionDiv = document.createElement('div');
+            instructionDiv.style.position = 'fixed';
+            instructionDiv.style.bottom = '20px';
+            instructionDiv.style.left = '20px';
+            instructionDiv.style.backgroundColor = '#FF5722'; /* لون الخلفية */
+            instructionDiv.style.color = '#FFF';
+            instructionDiv.style.padding = '15px';
+            instructionDiv.style.borderRadius = '8px';
+            instructionDiv.style.boxShadow = '0px 4px 10px rgba(0, 0, 0, 0.2)';
+            instructionDiv.style.zIndex = '1000'; /* تأكد من أن الرسالة في الأعلى */
+            instructionDiv.innerHTML = `
+        <p>يرجى تمكين إذن الميكروفون في إعدادات المتصفح الخاصة بك.</p>
+        <p>افتح إعدادات الميكروفون في المتصفح وتأكد من السماح باستخدامه لهذا الموقع.</p>
+        <p>إذا كنت تستخدم جوجل كروم، يمكنك العثور على الإعدادات عبر:</p>
+        <ul>
+            <li>انقر على النقاط الثلاث في أعلى اليمين</li>
+            <li>اختر "الإعدادات"</li>
+            <li>انتقل إلى "الخصوصية والأمان"</li>
+            <li>انقر على "الإعدادات المحتوى"</li>
+            <li>اختر "الميكروفون"</li>
+            <li>تأكد من أن الموقع ليس محظورًا</li>
+        </ul>
+    `;
+            document.body.appendChild(instructionDiv);
+
+            setTimeout(() => {
+                instructionDiv.remove();
+            }, 7000); // تختفي الرسالة بعد 7 ثوانٍ
+        }
+
+
+        function checkMicrophoneAvailability() {
+            navigator.mediaDevices.enumerateDevices()
+                .then(devices => {
+                    const hasMicrophone = devices.some(device => device.kind === 'audioinput');
+                    if (!hasMicrophone) {
+                        showPermissionInstructions();
+                    }
+                })
+                .catch(err => {
+                    console.error("Error enumerating devices", err);
+                    showPermissionInstructions();
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkMicrophoneAvailability();
+        });
+
+
+        copyButton.addEventListener('click', copyText);
+    </script>
+
+</body>
+
+</html>
