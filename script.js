@@ -33,19 +33,28 @@ function setupRecognition(recognition) {
     };
 }
 
+let lastTranscript = '';
+
 function processResult(results) {
     let finalTranscript = '';
     let interTranscript = '';
     for (let i = 0; i < results.length; i++) {
-        const transcript = results[i][0].transcript.replace("\n", "<br>");
-        if (results[i].isFinal) {
-            finalTranscript += transcript + ' ';
-        } else {
-            interTranscript += transcript;
+        let transcript = results[i][0].transcript;
+        transcript = transcript.replace("\n", "<br>");
+
+        // تحقق من عدم تكرار النص
+        if (transcript !== lastTranscript) {
+            if (results[i].isFinal) {
+                finalTranscript += transcript;
+            } else {
+                interTranscript += transcript;
+            }
         }
     }
+    lastTranscript = finalTranscript + interTranscript; // تحديث النص السابق
     return { finalTranscript, interTranscript };
 }
+
 
 function stopConverting() {
     if (recognition) {
