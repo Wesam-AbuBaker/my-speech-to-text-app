@@ -23,7 +23,7 @@ body.dark-mode {
 
 h2 {
     margin: 20px 0;
-    font-size: 2rem;
+    font-size: 2rem; /* 32px */
     color: #00416A;
     transition: color 0.3s;
 }
@@ -33,7 +33,7 @@ body.dark-mode h2 {
 }
 
 select {
-    font-size: 1.2rem;
+    font-size: 1.2rem; /* 19.2px */
     padding: 10px;
     border: 1px solid #DDDDDD;
     border-radius: 5px;
@@ -87,14 +87,21 @@ body.dark-mode .container {
     background: #F5F5F5;
     border-radius: 8px;
     overflow-y: auto;
-    font-size: 1.2rem;
+    font-size: 1.2rem; /* 19.2px */
     transition: background 0.3s, color 0.3s;
+    outline: none; /* إزالة الحدود الافتراضية */
 }
 
 body.dark-mode #result {
     background: #555;
     color: #CCC;
     border: 1px solid #666;
+}
+
+/* تحسينات على حالته عندما يكون في وضع تعديل */
+#result:focus {
+    border: 2px solid #007BFF; /* تغيير لون الحدود عند التركيز */
+    background: #fff; /* خلفية بيضاء */
 }
 
 .button-container {
@@ -106,7 +113,7 @@ body.dark-mode #result {
 }
 
 button {
-    font-size: 1.2rem;
+    font-size: 1.2rem; /* 19.2px */
     height: 60px;
     width: 60px;
     border-radius: 50%;
@@ -118,12 +125,33 @@ button {
 }
 
 button.recording {
-    background-color: #FF5722;
+    background-color: #FF5722; /* لون الخلفية */
+    border: 2px solid #FF0000; /* لون الحدود عند التسجيل */
+    box-shadow: 0 0 10px rgba(255, 87, 34, 0.5); /* ظل أكبر */
 }
 
 button:hover {
     background-color: #0056b3;
 }
+
+button.recording:hover {
+    background-color: #FF3D00; /* لون الخلفية عند التمرير */
+    box-shadow: 0 0 15px rgba(255, 87, 34, 0.7); /* ظل أكبر عند التمرير */
+}
+
+button:not(.recording) {
+    background-color: #007BFF; /* اللون العادي */
+    border: 2px solid #0056b3; /* لون الحدود */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* ظل */
+    transition: background-color 0.3s, border 0.3s, box-shadow 0.3s; /* تأثير الانتقال */
+}
+
+button:not(.recording):hover {
+    background-color: #0056b3; /* اللون عند التمرير */
+    border: 2px solid #003f7f; /* لون الحدود عند التمرير */
+    box-shadow: 0 0 10px rgba(0, 87, 179, 0.5); /* ظل عند التمرير */
+}
+
 
 #toggleMode {
     position: fixed;
@@ -152,7 +180,7 @@ button:hover {
     position: fixed;
     bottom: 130px;
     right: 20px;
-    font-size: 1.5rem;
+    font-size: 1.5rem; /* 24px */
 }
 
 #copyHint {
@@ -179,54 +207,71 @@ footer {
     bottom: 0;
     background-color: rgba(255, 255, 255, 0.8);
     border-top: 1px solid #DDDDDD;
-    font-size: 1rem;
+    font-size: 1rem; /* 16px */
     color: #333;
 }
 
 /* تنسيقات متجاوبة */
 @media (max-width: 768px) {
     h2 {
-        font-size: 1.5rem;
+        font-size: 1.5rem; /* 24px */
     }
 
     button {
         height: 50px;
         width: 50px;
-        font-size: 1rem;
+        font-size: 1rem; /* 16px */
     }
 
     #copyButton {
-        font-size: 1.2rem;
+        font-size: 1.2rem; /* 19.2px */
     }
 
     #result {
         height: 150px;
     }
+    #toggleMode {
+        height: 50px; /* ارتفاع أصغر للهواتف */
+        width: 50px; /* عرض أصغر للهواتف */
+        font-size: 1.2rem; /* حجم خط أصغر للهواتف */
+    }
+    #copyHint {
+        font-size: 1rem; /* 16px */
+    }
 }
 
 @media (max-width: 480px) {
     h2 {
-        font-size: 1.3rem;
+        font-size: 1.3rem; /* 20.8px */
     }
 
     select {
-        font-size: 1rem;
+        font-size: 1rem; /* 16px */
         max-width: 100%;
     }
 
     button {
         height: 45px;
         width: 45px;
-        font-size: 0.9rem;
+        font-size: 0.9rem; /* 14.4px */
     }
 
     #copyButton {
         height: 45px;
         width: 45px;
-        font-size: 1rem;
+        font-size: 1rem; /* 16px */
     }
 
     footer {
-        font-size: 0.9rem;
+        font-size: 0.9rem; /* 14.4px */
+    }
+    
+    #toggleMode {
+        height: 45px; /* ارتفاع مناسب للهواتف */
+        width: 45px; /* عرض مناسب للهواتف */
+        font-size: 1rem; /* حجم خط متناسق */
+    }
+    #copyHint {
+        font-size: 0.9rem; /* 14.4px */
     }
 }

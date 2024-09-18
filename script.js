@@ -64,9 +64,10 @@ function handleError(event) {
 }
 
 function copyText() {
-    const text = resultElement.textContent;
+    const text = resultElement.innerText; // استخدم innerText بدلاً من textContent
     navigator.clipboard.writeText(text).then(showCopyHint);
 }
+
 
 function showCopyHint() {
     copyHint.style.display = 'block';
