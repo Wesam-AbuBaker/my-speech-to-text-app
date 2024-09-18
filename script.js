@@ -78,6 +78,7 @@ function showCopyHint() {
 document.addEventListener('DOMContentLoaded', () => {
     requestMicrophonePermission();
     setupLanguageChangeListener();
+    updateFooterText(); // إضافة هذا السطر
 });
 
 function requestMicrophonePermission() {
@@ -112,6 +113,7 @@ function setupLanguageChangeListener() {
             setupRecognition(recognition);
         }
         updateLanguage();
+        updateFooterText(); // إضافة هذا السطر
     });
     updateLanguage();
 }
@@ -120,6 +122,17 @@ function updateLanguage() {
     const selectedLanguage = languageSelect.value;
     headerText.textContent = selectedLanguage === 'ar-AR' ? 'محول الكلام إلى نص' : 'Speech to Text Converter';
     document.body.style.direction = selectedLanguage === 'ar-AR' ? 'rtl' : 'ltr';
+}
+
+function updateFooterText() {
+    const footerText = document.getElementById("footerText");
+    const selectedLanguage = languageSelect.value;
+
+    if (selectedLanguage === 'ar-AR') {
+        footerText.innerHTML = '© 2024 جميع الحقوق محفوظة. <br> صمم بواسطة <strong>Wesam Moath Abubaker</strong>';
+    } else {
+        footerText.innerHTML = '© 2024 All rights reserved. <br> Designed by <strong>Wesam Moath Abubaker</strong>';
+    }
 }
 
 toggleModeButton.addEventListener('click', () => {
