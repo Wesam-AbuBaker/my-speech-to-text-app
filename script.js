@@ -9,8 +9,8 @@ const copyHint = document.getElementById("copyHint");
 let recognition;
 
 function startConverting() {
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
         setupRecognition(recognition);
         recognition.start();
         startButton.classList.add('recording');
@@ -23,20 +23,28 @@ function setupRecognition(recognition) {
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = languageSelect.value;
-
     recognition.onresult = (event) => {
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            const transcript = event.results[i][0].transcript;
-            finalTranscript += event.results[i].isFinal ? transcript : '';
-        }
-        resultElement.innerHTML = finalTranscript;
+        const { finalTranscript, interTranscript } = processResult(event.results);
+        resultElement.innerHTML = finalTranscript + interTranscript;
     };
-
     recognition.onerror = handleError;
     recognition.onend = () => {
         startButton.classList.remove('recording');
     };
+}
+
+function processResult(results) {
+    let finalTranscript = '';
+    let interTranscript = '';
+    for (let i = 0; i < results.length; i++) {
+        const transcript = results[i][0].transcript.replace("\n", "<br>");
+        if (results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+        } else {
+            interTranscript += transcript;
+        }
+    }
+    return { finalTranscript, interTranscript };
 }
 
 function stopConverting() {
@@ -90,14 +98,16 @@ function showPermissionInstructions() {
     instructionDiv.style.padding = '15px';
     instructionDiv.style.borderRadius = '8px';
     instructionDiv.style.zIndex = '1000';
-    instructionDiv.innerHTML = `<p>يرجى تمكين إذن الميكروفون في إعدادات المتصفح الخاصة بك.</p>`;
+    instructionDiv.innerHTML = `
+        <p>يرجى تمكين إذن الميكروفون في إعدادات المتصفح الخاصة بك.</p>
+    `;
     document.body.appendChild(instructionDiv);
     setTimeout(() => instructionDiv.remove(), 7000);
 }
 
 function setupLanguageChangeListener() {
     languageSelect.addEventListener('change', () => {
-        if (recognition) {
+        if (recognition && recognition.start) {
             recognition.stop();
             setupRecognition(recognition);
         }
